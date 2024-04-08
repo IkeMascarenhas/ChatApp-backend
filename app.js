@@ -32,6 +32,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("createUser_joinRoom", ({ user, room }) => {
+
     socket.join(room);
 
     socket.emit("receiveMessage", {
@@ -43,7 +44,7 @@ io.on("connection", (socket) => {
       }).format(new Date()),
     });
 
-    socket.broadcast.emit("receiveMessage", {
+    socket.broadcast.to(room).emit("receiveMessage", {
       message: `${user} joined room`,
       admin: true,
       time: new Intl.DateTimeFormat("default", {
@@ -63,6 +64,21 @@ io.on("connection", (socket) => {
       socket.emit("receiveMessage", { message, user, room, currentUser: true });
     });
   });
+
+  socket.on('leaveRoom', ({user, room}) => {
+    socket.leave(room); 
+    console.log(`${user} left ${room}`)// O cliente sai da sala especificada// Obtendo informações sobre a sala
+    socket.broadcast.to(room).emit("receiveMessage", {
+      message: `${user} left room`,
+      admin: true,
+      time: new Intl.DateTimeFormat("default", {
+        hour: "numeric",
+        minute: "numeric",
+      }).format(new Date()),
+    });
+});
+
+  
 });
 
 server.listen(PORT, () => {
